@@ -432,11 +432,19 @@ typedef __char16_t char16_t;
 typedef __char32_t char32_t;
 #endif
 
-#if !(__has_feature(cxx_exceptions)) && !defined(_LIBCUDACXX_NO_EXCEPTIONS)
+#if __has_feature(cxx_exceptions)
+#define _LIBCUDACXX_EXT_EXCEPTIONS_ENABLED
+#endif
+
+#if !defined(_LIBCUDACXX_EXT_EXCEPTIONS_ENABLED) && !defined(_LIBCUDACXX_NO_EXCEPTIONS)
 #define _LIBCUDACXX_NO_EXCEPTIONS
 #endif
 
-#if !(__has_feature(cxx_rtti)) && !defined(_LIBCUDACXX_NO_RTTI)
+#if __has_feature(cxx_rtti)
+#define _LIBCUDACXX_EXT_RTTI_ENABLED
+#endif
+
+#if !defined(_LIBCUDACXX_EXT_RTTI_ENABLED) && !defined(_LIBCUDACXX_NO_RTTI)
 #define _LIBCUDACXX_NO_RTTI
 #endif
 
@@ -733,7 +741,12 @@ typedef __char32_t char32_t;
 // #define _LIBCUDACXX_IS_SAME(...) __is_same_as(__VA_ARGS__)
 #endif
 
-#if !__EXCEPTIONS && !defined(_LIBCUDACXX_NO_EXCEPTIONS)
+// GCC defines __EXCEPTIONS while MSVC uses _CPPUNWIND
+#if defined(__EXCEPTIONS) || defined(_CPPUNWIND)
+#define _LIBCUDACXX_EXT_EXCEPTIONS_ENABLED
+#endif
+
+#if !defined(_LIBCUDACXX_EXT_EXCEPTIONS_ENABLED) && !defined(_LIBCUDACXX_NO_EXCEPTIONS)
 #define _LIBCUDACXX_NO_EXCEPTIONS
 #endif
 
@@ -1467,16 +1480,19 @@ _LIBCUDACXX_FUNC_VIS extern "C" void __sanitizer_annotate_contiguous_container(
   const void *, const void *, const void *, const void *);
 #endif
 
-// Try to find out if RTTI is disabled.
+
+// Try to find out if RTTI is enabled.
 // g++ and cl.exe have RTTI on by default and define a macro when it is.
-// g++ only defines the macro in 4.3.2 and onwards.
+// g++ only defines the macro in 4.3.2 and onwards, but we only care about 4.8 and up
+#if defined(__GNUC__) && defined(__GXX_RTTI)
+#    define _LIBCUDACXX_EXT_RTTI_ENABLED
+#elif defined(_LIBCUDACXX_COMPILER_MSVC) && defined(_CPPRTTI)
+#    define _LIBCUDACXX_EXT_RTTI_ENABLED
+#endif
+
+// Disable RTTI if it wasn't requested earlier
 #if !defined(_LIBCUDACXX_NO_RTTI)
-#  if defined(__GNUC__) && \
-      ((__GNUC__ >= 5) || \
-       (__GNUC__ == 4 && (__GNUC_MINOR__ >= 3 || __GNUC_PATCHLEVEL__ >= 2))) && \
-      !defined(__GXX_RTTI)
-#    define _LIBCUDACXX_NO_RTTI
-#  elif defined(_LIBCUDACXX_COMPILER_MSVC) && !defined(_CPPRTTI)
+#  if !defined(_LIBCUDACXX_EXT_RTTI_ENABLED)
 #    define _LIBCUDACXX_NO_RTTI
 #  endif
 #endif
