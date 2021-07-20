@@ -179,7 +179,7 @@ protected:
   }
 
   template <typename _ResourcePointer, typename... _Properties>
-  friend class basic_resource_view;
+  friend class cuda::basic_resource_view;
 };
 
 class stream_ordered_memory_resource_base : public virtual memory_resource_base {
@@ -297,7 +297,7 @@ protected:
   virtual void do_deallocate_async(void *__mem, size_t __bytes, size_t __alignment, stream_view __stream) = 0;
 
   template <typename _ResourcePointer, typename... _Properties>
-  friend class basic_resource_view;
+  friend class cuda::basic_resource_view;
 };
 
 }  // namespace detail
@@ -397,11 +397,11 @@ private:
   }
 
   bool is_equal_base(const detail::memory_resource_base &__other) const noexcept final override {
-    #if _LIBCUDACXX_NO_RTTI
+    #ifdef _LIBCUDACXX_NO_RTTI
       return this == &__other;
     #else
       if (auto *__other_res = dynamic_cast<const memory_resource *>(&__other))
-        return do_is_equal(__other_res);
+        return do_is_equal(*__other_res);
       else
         return false;
     #endif
@@ -764,7 +764,7 @@ public:
       using __view2_t = basic_resource_view<_Ptr2, _Props2...>;
       static_assert(cuda::is_view_convertible<__view1_t, __view2_t>::value || cuda::is_view_convertible<__view2_t, __view1_t>::value,
         "The resource views are not compatible");
-      return static_cast<const detail::memory_resource_base*>(__pointer)->is_equal(__v2.pointer);
+      return static_cast<const detail::memory_resource_base*>(__pointer)->is_equal(*__v2.__pointer);
     }
 
     template <typename _Ptr2, typename... _Props2>

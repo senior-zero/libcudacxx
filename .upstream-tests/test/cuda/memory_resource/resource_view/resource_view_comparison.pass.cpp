@@ -31,7 +31,9 @@ private:
 
 #ifndef _LIBCUDACXX_NO_RTTI
   bool do_is_equal(const cuda::memory_resource<cuda::memory_kind::pinned> &other) const noexcept override {
+    fprintf(stderr, "Comparison start: %p %p\n", this, &other);
     if (auto *other_ptr = dynamic_cast<const resource *>(&other)) {
+      fprintf(stderr, "values: %d %d\n", value, other_ptr->value);
       return value == other_ptr->value;
     } else {
       return false;
@@ -44,6 +46,7 @@ private:
 struct tag1;
 struct tag2;
 
+
 int main(int argc, char **argv) {
 #if !defined(__CUDA_ARCH__) && !defined(_LIBCUDACXX_NO_RTTI)
   resource<tag1> r1, r2, r3;
@@ -52,10 +55,23 @@ int main(int argc, char **argv) {
   r2.value = 42;
   r3.value = 99;
   r4.value = 42;
-
+  using t1 = decltype(view_resource(&r1));
+  using t2 = decltype(view_resource(&r2));
+  using t4 = decltype(view_resource(&r4));
   assert(view_resource(&r1) == view_resource(&r2));
   assert(view_resource(&r1) != view_resource(&r3));
-  assert(view_resource(&r1) == view_resource(&r4));
+  assert(view_resource(&r4) == view_resource(&r4));
+  cuda::resource_view<cuda::memory_access::host, cuda::memory_access::device>   v1 = &r1;
+  cuda::resource_view<cuda::memory_access::device> v2 = &r2;
+  cuda::resource_view<cuda::memory_access::host>   v3 = &r3;
+  cuda::resource_view<cuda::memory_access::device, cuda::memory_access::host> v4 = &r4;
+  assert(v1 == v2);
+  assert(v1 != v3);
+  assert(v1 != v4);
+  // assert(v2 != v3); - cannot compare
+  assert(v2 != v4);
+  assert(v3 != v4);
+  assert(v4 == v4);
 #endif
   return 0;
 }
