@@ -463,12 +463,12 @@ private:
     return this == &__other;
   }
 
-  virtual void *__do_as_kind(const ::std::type_info *__kind_type_id, const void *__kind_type_fallback_id) const noexcept {
+  void *__do_as_kind(const ::std::type_info *__kind_type_id, const void *__kind_type_fallback_id) const noexcept final {
     return detail::__fallback_typeid::__is_type<memory_kind*>(__kind_type_id, __kind_type_fallback_id)
               ? const_cast<memory_resource*>(this) : nullptr;
   }
 
-  bool is_equal_base(const detail::memory_resource_base &__other) const noexcept final override {
+  bool is_equal_base(const detail::memory_resource_base &__other) const noexcept final {
     if (auto *__other_res = __other.as_kind<memory_kind>()) {
       return do_is_equal(*__other_res);
     } else {
@@ -833,6 +833,8 @@ public:
       using __view2_t = basic_resource_view<_Ptr2, _Props2...>;
       static_assert(cuda::is_view_convertible<__view1_t, __view2_t>::value || cuda::is_view_convertible<__view2_t, __view1_t>::value,
         "The resource views are not compatible");
+      if (__pointer == nullptr || __v2.__pointer == nullptr)
+        return __pointer == nullptr && __v2.__pointer == nullptr;
       return static_cast<const detail::memory_resource_base*>(__pointer)->is_equal(*__v2.__pointer);
     }
 
