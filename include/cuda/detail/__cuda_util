@@ -39,6 +39,7 @@ void __throw_on_cuda_error(::cudaError_t __error, char const *__msg) {
   }
 }
 
+inline _LIBCUDACXX_INLINE_VISIBILITY
 void __throw_on_cuda_error(::cudaError_t __error) {
   __throw_on_cuda_error(__error, "");
 }
