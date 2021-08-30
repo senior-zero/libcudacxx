@@ -90,8 +90,8 @@ const ::std::type_info *__get_typeid() {
 #endif
 }
 
-bool __compare_type(const ::std::type_info *__ti1, const void *__fallback_ti1,
-                    const ::std::type_info *__ti2, const void *__fallback_ti2) {
+inline bool __compare_type(const ::std::type_info *__ti1, const void *__fallback_ti1,
+                           const ::std::type_info *__ti2, const void *__fallback_ti2) {
 #ifdef _LIBCUDACXX_EXT_RTTI_ENABLED
   if (__ti1 && __ti2 && *__ti1 == *__ti2)
     return true;
