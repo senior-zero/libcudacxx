@@ -66,6 +66,7 @@ enum thread_scope {
     thread_scope_system = __ATOMIC_SYSTEM,
     thread_scope_device = __ATOMIC_DEVICE,
     thread_scope_block = __ATOMIC_BLOCK,
+    thread_scope_warp,
     thread_scope_thread = __ATOMIC_THREAD
 };
 
